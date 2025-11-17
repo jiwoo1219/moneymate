@@ -1,5 +1,6 @@
 package com.moneymate.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -13,14 +14,15 @@ public class Expense {
 
     private String category;
     private int amount;
-    private LocalDate date;
-    private String note;
+    private LocalDate spendDate;
+    private String memo;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
-    // Getter/Setter
+    // ===== GETTER & SETTER =====
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -30,11 +32,11 @@ public class Expense {
     public int getAmount() { return amount; }
     public void setAmount(int amount) { this.amount = amount; }
 
-    public LocalDate getDate() { return date; }
-    public void setDate(LocalDate date) { this.date = date; }
+    public LocalDate getSpendDate() { return spendDate; }
+    public void setSpendDate(LocalDate spendDate) { this.spendDate = spendDate; }
 
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
+    public String getMemo() { return memo; }
+    public void setMemo(String memo) { this.memo = memo; }
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }

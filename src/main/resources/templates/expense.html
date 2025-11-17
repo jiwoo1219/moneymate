@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>지출 입력 — MoneyMate</title>
+
+<style>
+/* === 너가 보낸 전체 스타일 그대로 === */
+:root{
+  --y-50:#FFFAE5;
+  --y-100:#FFF1B8;
+  --y-200:#FFE680;
+  --y-300:#FFD84D;
+  --y-400:#FFC93A;
+  --y-600:#CC9A00;
+  --ink:#3B3B3B;
+  --line:#E9E2B0;
+  --white:#FFFFFF;
+  --ok:#2E7D32; --warn:#C62828; --muted:#7A7A7A;
+  --radius:16px; --shadow:0 6px 24px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Pretendard","Inter",system-ui;color:var(--ink);background:var(--y-50)}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--line)}
+.btn{background:var(--y-300);color:#3b2f00;border:none;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}
+.btn:hover{background:var(--y-400)}
+.input,.select{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.col{flex:1 1 300px}
+.section-title{display:flex;align-items:center;justify-content:space-between}
+table{width:100%;border-collapse:separate;border-spacing:0}
+th,td{padding:10px;border-bottom:1px solid var(--line);font-size:14px}
+th{text-align:left;color:#5A4E00}
+.page{padding:24px}
+</style>
+</head>
+
+<body>
+
+<section id="page-expense" class="page active">
+
+  <h1 style="margin-bottom:20px;font-weight:800">지출 입력 / 지출 내역</h1>
+
+  <div class="row">
+    <!-- 입력 영역 -->
+    <div class="col">
+      <div class="card" style="padding:16px">
+        <h2>지출 입력</h2>
+
+        <div class="row">
+          <div class="col">
+            <label>날짜
+              <input class="input" type="date" id="expDate" />
+            </label>
+          </div>
+          <div class="col">
+            <label>금액
+              <input class="input" type="number" id="expAmount" min="0" placeholder="예: 12000"/>
+            </label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label>카테고리
+              <select id="expCategory" class="select">
+                <option value="식비">식비</option>
+                <option value="교통">교통</option>
+                <option value="쇼핑">쇼핑</option>
+                <option value="생활">생활</option>
+                <option value="의료">의료</option>
+                <option value="기타">기타</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="col">
+            <label>메모
+              <input class="input" id="expMemo" placeholder="메모 (선택)" />
+            </label>
+          </div>
+        </div>
+
+        <div style="text-align:right;margin-top:10px">
+          <button class="btn" id="addExpense">추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 조회 영역 -->
+    <div class="col">
+      <div class="card" style="padding:16px">
+        <div class="section-title">
+          <h2>해당 달 지출내역</h2>
+          <input type="month" id="expMonth" class="input" style="width:180px" />
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>날짜</th><th>카테고리</th><th>금액</th><th>메모</th><th></th></tr>
+          </thead>
+          <tbody id="expTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<script>
+/* ========== 여기서 JS 넣어서 API 호출할 예정 (아직 비어 있음) ========== */
+</script>
+
+</body>
+</html>

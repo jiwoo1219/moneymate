@@ -8,11 +8,9 @@ import java.util.List;
 
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
-    // 자주 쓰는 조회 패턴 (선택)
-    List<Expense> findByUserId(Long userId);
+    List<Expense> findByUser_Id(Long userId);
 
-    List<Expense> findByUserIdAndDateBetween(Long userId, LocalDate start, LocalDate end);
+    List<Expense> findByUser_IdAndSpendDateBetween(Long userId, LocalDate start, LocalDate end);
 
-    List<Expense> findByUserIdAndCategory(Long userId, String category);
+    List<Expense> findByUser_IdAndCategory(Long userId, String category);
 }
-

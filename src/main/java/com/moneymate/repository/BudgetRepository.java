@@ -1,17 +1,13 @@
 package com.moneymate.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import com.moneymate.entity.Budget;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
-    // 특정 사용자 예산 전체
-    List<Budget> findByUserId(Long userId);
+    List<Budget> findByUser_IdAndYearMonth(Long userId, String yearMonth);
 
-    // 사용자 + 카테고리로 1건 (있으면)
-    Optional<Budget> findByUserIdAndCategory(Long userId, String category);
+    void deleteByUser_IdAndYearMonth(Long userId, String yearMonth);
 }
-
