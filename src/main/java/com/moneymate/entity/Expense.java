@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
+
 @Entity
 @Table(name = "expenses")
 public class Expense {
@@ -14,6 +15,7 @@ public class Expense {
 
     private String category;
     private int amount;
+    
     private LocalDate spendDate;
     private String memo;
 

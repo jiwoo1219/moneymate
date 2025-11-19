@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>MoneyMate - 노란 파스텔 가계부</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --yellow-main: #ffeaa7;
+            --yellow-deep: #fdcb6e;
+            --yellow-light: #fff6d7;
+            --gray-text: #555;
+            --accent: #6c5ce7;
+            --danger: #d63031;
+            --bg: #fffdf7;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg);
+            color: var(--gray-text);
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 사이드바 */
+        .sidebar {
+            width: 220px;
+            background: linear-gradient(180deg, var(--yellow-main), var(--yellow-light));
+            padding: 20px 16px;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .brand {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: #2d3436;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-badge {
+            font-size: 0.7rem;
+            background: white;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .user-info-box {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 12px 10px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .user-info-box strong {
+            color: #2d3436;
+        }
+
+        .menu-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #636e72;
+            margin-bottom: 6px;
+        }
+
+        .nav-btn {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: left;
+            padding: 10px 10px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: #2d3436;
+        }
+
+        .nav-btn span.icon {
+            font-size: 1.1rem;
+        }
+
+        .nav-btn.active {
+            background: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+
+        .nav-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.7);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            font-size: 0.75rem;
+            color: #636e72;
+            opacity: 0.8;
+        }
+
+        /* 메인 */
+        .main {
+            flex: 1;
+            padding: 20px 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .top-texts {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .top-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2d3436;
+        }
+
+        .top-sub {
+            font-size: 0.9rem;
+            color: #636e72;
+        }
+
+        .budget-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--yellow-light);
+            border: 1px dashed var(--yellow-deep);
+            font-size: 0.85rem;
+        }
+
+        .budget-badge strong {
+            color: #2d3436;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 16px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px 18px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #2d3436;
+        }
+
+        .card-sub {
+            font-size: 0.8rem;
+            color: #636e72;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: var(--yellow-light);
+            color: #2d3436;
+        }
+
+        /* 폼 */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            color: #636e72;
+        }
+
+        input, select {
+            border-radius: 999px;
+            border: 1px solid #dfe6e9;
+            padding: 7px 11px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--yellow-deep);
+            box-shadow: 0 0 0 2px rgba(253, 203, 110, 0.3);
+        }
+
+        .btn {
+            border-radius: 999px;
+            border: none;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-primary {
+            background: var(--yellow-deep);
+            color: #2d3436;
+        }
+
+        .btn-outline {
+            background: #fff;
+            border: 1px solid #dfe6e9;
+            color: #2d3436;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn + .btn {
+            margin-left: 4px;
+        }
+
+        /* 테이블 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 6px 8px;
+        }
+
+        th {
+            background: #fafafa;
+            border-bottom: 1px solid #ececec;
+            color: #636e72;
+        }
+
+        tr:nth-child(even) {
+            background: #fcfcfc;
+        }
+
+        tr:hover td {
+            background: #fffde7;
+        }
+
+        /* 캘린더 */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+
+        .calendar-cell {
+            border-radius: 10px;
+            padding: 6px;
+            min-height: 60px;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .calendar-cell .day {
+            font-weight: 600;
+            color: #2d3436;
+        }
+
+        .calendar-cell .amount {
+            font-size: 0.75rem;
+            color: var(--danger);
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #636e72;
+        }
+
+        /* 탭에 따른 영역 전환 */
+        .section-panel {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .section-panel.active {
+            display: flex;
+        }
+
+        /* 알림/토스트 */
+        .toast {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background: #2d3436;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            transform: translateY(10px);
+        }
+
+        .toast.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        /* 로그인 화면 */
+        #auth-section {
+            display: flex;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: #fffdf9;
+            border-radius: 20px;
+            padding: 20px 24px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.07);
+        }
+
+        .auth-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .auth-sub {
+            font-size: 0.9rem;
+            color: #636e72;
+            margin-bottom: 18px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            background: #fff;
+            border-radius: 999px;
+            padding: 3px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            border-radius: 999px;
+            padding: 6px 0;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+
+        .auth-tab.active {
+            background: var(--yellow-main);
+            font-weight: 600;
+        }
+
+        .auth-form {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .auth-form.active {
+            display: flex;
+        }
+
+        .auth-bottom-tip {
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #b2bec3;
+        }
+
+        .pill-input {
+            border-radius: 999px;
+            border: 1px solid #dfe6e9;
+            padding: 7px 11px;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        .pill-input:focus {
+            outline: none;
+            border-color: var(--yellow-deep);
+            box-shadow: 0 0 0 2px rgba(253,203,110,0.3);
+        }
+
+        .auth-label {
+            font-size: 0.8rem;
+            color: #636e72;
+            margin-bottom: 2px;
+        }
+
+        .auth-btn {
+            margin-top: 6px;
+            width: 100%;
+            border-radius: 999px;
+            border: none;
+            padding: 9px 0;
+            background: var(--yellow-deep);
+            color: #2d3436;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-btn:hover {
+            filter: brightness(1.02);
+        }
+
+        @media (max-width: 960px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 로그인 & 회원가입 섹션 -->
+<section id="auth-section">
+    <div class="auth-card">
+        <div class="auth-title">MoneyMate 🐣</div>
+        <div class="auth-sub">노란 파스텔 가계부에 오신 걸 환영해요. <br>먼저 로그인 또는 회원가입을 해주세요.</div>
+
+        <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login">로그인</button>
+            <button class="auth-tab" data-tab="register">회원가입</button>
+        </div>
+
+        <!-- 로그인 폼 -->
+        <form id="login-form" class="auth-form active">
+            <div>
+                <div class="auth-label">아이디</div>
+                <input type="text" id="login-username" class="pill-input" placeholder="아이디를 입력하세요" required />
+            </div>
+            <div>
+                <div class="auth-label">비밀번호</div>
+                <input type="password" id="login-password" class="pill-input" placeholder="비밀번호를 입력하세요" required />
+            </div>
+            <button type="submit" class="auth-btn">로그인</button>
+        </form>
+
+        <!-- 회원가입 폼 -->
+        <form id="register-form" class="auth-form">
+            <div>
+                <div class="auth-label">이름</div>
+                <input type="text" id="register-name" class="pill-input" placeholder="이름" />
+            </div>
+            <div>
+                <div class="auth-label">아이디</div>
+                <input type="text" id="register-username" class="pill-input" placeholder="아이디" required />
+            </div>
+            <div>
+                <div class="auth-label">비밀번호</div>
+                <input type="password" id="register-password" class="pill-input" placeholder="비밀번호" required />
+            </div>
+            <div class="form-row" style="gap:6px;">
+                <div class="form-group" style="flex:1;">
+                    <div class="auth-label">나이 (선택)</div>
+                    <input type="number" id="register-age" class="pill-input" placeholder="예: 24" />
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <div class="auth-label">성별 (선택)</div>
+                    <select id="register-gender" class="pill-input">
+                        <option value="">선택 없음</option>
+                        <option value="FEMALE">여성</option>
+                        <option value="MALE">남성</option>
+                        <option value="OTHER">기타</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="auth-btn">회원가입 후 로그인</button>
+        </form>
+
+        <div class="auth-bottom-tip">
+            * 입력하신 정보는 MoneyMate 서버(DB)에만 저장되고, 브라우저에는 최소한의 로그인 정보만 유지돼요.
+        </div>
+    </div>
+</section>
+
+<!-- 메인 앱 섹션 -->
+<div id="app-section" class="app-container" style="display:none;">
+    <!-- 사이드바 -->
+    <aside class="sidebar">
+        <div class="brand">
+            💛 MoneyMate
+            <span class="brand-badge">beta</span>
+        </div>
+        <div class="user-info-box">
+            <div><strong id="sidebar-username">로그인 필요</strong> 님</div>
+            <div style="font-size:0.8rem;margin-top:2px;">
+                이번 달 지출을<br>한눈에 정리해 볼까요?
+            </div>
+        </div>
+
+        <div>
+            <div class="menu-title">Pages</div>
+            <button class="nav-btn active" data-target="budget">
+                <span class="icon">📌</span> 예산 관리
+            </button>
+            <button class="nav-btn" data-target="expense">
+                <span class="icon">🧾</span> 지출 내역
+            </button>
+            <button class="nav-btn" data-target="calendar">
+                <span class="icon">📅</span> 달력
+            </button>
+            <button class="nav-btn" data-target="stats">
+                <span class="icon">📊</span> 통계
+            </button>
+        </div>
+
+        <div class="sidebar-footer">
+            로그인 계정: <span id="sidebar-username-mini">-</span><br>
+            <button id="logout-btn" class="btn btn-outline" style="margin-top:6px;padding:6px 10px;font-size:0.78rem;">
+                로그아웃
+            </button>
+        </div>
+    </aside>
+
+    <!-- 메인 -->
+    <main class="main">
+        <div class="top-bar">
+            <div class="top-texts">
+                <div class="top-title">
+                    <span id="top-username">사용자</span> 님의 현재 예산은
+                    <span id="top-budget">0원</span> 입니다.
+                </div>
+                <div class="top-sub">
+                    선택된 기준월: <span id="top-year-month">-</span> |
+                    지출 합계: <span id="top-expense-total">0원</span>
+                </div>
+            </div>
+            <div class="budget-badge">
+                🔄 <span>페이지 내 모든 데이터는 현재 로그인한 계정 기준으로 불러와져요.</span>
+            </div>
+        </div>
+
+        <!-- 상단 두 카드: 예산, 지출 입력 -->
+        <div class="content">
+            <!-- 좌측: 예산 & 지출 입력/조회 -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">예산 & 지출 관리</div>
+                        <div class="card-sub">기준 월을 먼저 선택하고, 예산/지출을 기록해주세요.</div>
+                    </div>
+                    <div class="tag">월 단위 관리</div>
+                </div>
+
+                <!-- 기준 월 선택 -->
+                <div class="form-row" style="margin-bottom:6px;">
+                    <div class="form-group" style="max-width:180px;">
+                        <label>기준 월</label>
+                        <input type="month" id="global-year-month" />
+                    </div>
+                    <div class="form-group" style="flex:0;">
+                        <label>&nbsp;</label>
+                        <button id="btn-set-month" class="btn btn-outline" type="button">
+                            기준 월 적용
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 예산 관리 영역 (카테고리별 확장) -->
+                <div id="section-budget" class="section-panel active">
+                    <div class="card-sub" style="margin-top:2px;">선택한 월 기준 예산을 총액 + 카테고리별로 저장·조회할 수 있어요.</div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>총 예산 (원)</label>
+                            <input type="number" id="budget-total" placeholder="예: 500000" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>식비</label>
+                            <input type="number" id="budget-food" placeholder="예: 150000" />
+                        </div>
+                        <div class="form-group">
+                            <label>카페/간식</label>
+                            <input type="number" id="budget-cafe" placeholder="예: 50000" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>쇼핑</label>
+                            <input type="number" id="budget-shopping" placeholder="예: 100000" />
+                        </div>
+                        <div class="form-group">
+                            <label>교통비</label>
+                            <input type="number" id="budget-transport" placeholder="예: 40000" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>문화/여가</label>
+                            <input type="number" id="budget-culture" placeholder="예: 30000" />
+                        </div>
+                        <div class="form-group">
+                            <label>생활/기타</label>
+                            <input type="number" id="budget-life" placeholder="예: 20000" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>건강/운동</label>
+                            <input type="number" id="budget-health" placeholder="예: 20000" />
+                        </div>
+                        <div class="form-group">
+                            <label>뷰티/헤어</label>
+                            <input type="number" id="budget-beauty" placeholder="예: 30000" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <button id="btn-save-budget" class="btn btn-primary" type="button">예산 저장</button>
+                        <button id="btn-load-budget" class="btn btn-outline" type="button">예산 조회</button>
+                        <button id="btn-delete-budget" class="btn btn-danger" type="button">예산 삭제</button>
+                    </div>
+                </div>
+
+                <!-- 지출 관리 영역 -->
+                <div id="section-expense" class="section-panel">
+                    <div class="card-sub" style="margin-top:2px;">지출을 입력하면, 바로 아래 테이블·통계·달력까지 연동돼요.</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>날짜</label>
+                            <input type="date" id="expense-date" />
+                        </div>
+                        <div class="form-group">
+                            <label>카테고리</label>
+                            <input type="text" id="expense-category" placeholder="예: 식비, 카페, 교통" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>메모</label>
+                            <input type="text" id="expense-memo" placeholder="예: 스타벅스 아메리카노" />
+                        </div>
+                        <div class="form-group">
+                            <label>금액 (원)</label>
+                            <input type="number" id="expense-amount" placeholder="예: 4500" />
+                        </div>
+                    </div>
+                    <div>
+                        <button id="btn-save-expense" class="btn btn-primary" type="button">지출 저장</button>
+                        <button id="btn-refresh-expense" class="btn btn-outline" type="button">이 달 지출 새로고침</button>
+                    </div>
+                </div>
+
+                <!-- 달력 패널 (좌측 상단에선 설명만, 실제 달력은 우측 카드) -->
+                <div id="section-calendar" class="section-panel">
+                    <div class="card-sub">오른쪽 “달력” 카드에서 지출이 찍혀요. 이곳에서는 기준 월만 맞춰주세요.</div>
+                </div>
+
+                <!-- 통계 패널 (좌측 상단 설명) -->
+                <div id="section-stats" class="section-panel">
+                    <div class="card-sub">오른쪽 “통계” 카드에서 카테고리별 지출 차트를 볼 수 있어요.</div>
+                </div>
+            </div>
+
+            <!-- 우측: 지출 리스트 / 달력 / 차트 -->
+            <div class="card">
+                <!-- 지출 내역 리스트 패널 -->
+                <div id="panel-expense-list" class="section-panel active">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">지출 내역</div>
+                            <div class="card-sub">기준 월에 해당하는 지출을 자동으로 불러와요.</div>
+                        </div>
+                        <div class="tag">Table</div>
+                    </div>
+                    <div style="max-height:340px; overflow:auto;">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>날짜</th>
+                                <th>카테고리</th>
+                                <th>메모</th>
+                                <th style="text-align:right;">금액</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody id="expense-table-body">
+                            <!-- JS로 채워짐 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 달력 패널 -->
+                <div id="panel-calendar-view" class="section-panel">
+                    <div class="card-header calendar-header">
+                        <div>
+                            <div class="card-title">지출 달력</div>
+                            <div class="card-sub">각 날짜별 지출 합계를 달력으로 확인할 수 있어요.</div>
+                        </div>
+                        <div class="tag" id="calendar-month-label">-</div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-weekdays">
+                        <div class="calendar-weekday">일</div>
+                        <div class="calendar-weekday">월</div>
+                        <div class="calendar-weekday">화</div>
+                        <div class="calendar-weekday">수</div>
+                        <div class="calendar-weekday">목</div>
+                        <div class="calendar-weekday">금</div>
+                        <div class="calendar-weekday">토</div>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid">
+                        <!-- JS로 날짜 채움 -->
+                    </div>
+                </div>
+
+                <!-- 통계(차트) 패널 -->
+                <div id="panel-stats-view" class="section-panel">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">카테고리별 지출 통계</div>
+                            <div class="card-sub">현재 기준 월의 지출 데이터를 카테고리별로 묶어서 보여줘요.</div>
+                        </div>
+                        <div class="tag">Chart</div>
+                    </div>
+                    <div style="height:260px;">
+                        <canvas id="expense-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+    // ====== 전역 상태 ======
+    let currentUser = null;          // 로그인한 User 객체
+    let currentYearMonth = null;     // 기준 월: "YYYY-MM"
+    let currentExpenses = [];        // 현재 월 지출 리스트
+    let chartInstance = null;        // Chart.js 인스턴스
+
+    // ====== 유틸 함수 ======
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2200);
+    }
+
+    function formatCurrency(value) {
+        if (value == null || isNaN(value)) return '0원';
+        return Number(value).toLocaleString('ko-KR') + '원';
+    }
+
+    function getYearMonthFromDateStr(dateStr) {
+        if (!dateStr) return null;
+        return dateStr.slice(0, 7); // "YYYY-MM-DD" -> "YYYY-MM"
+    }
+
+    function parseYearMonth(yearMonth) {
+        // "YYYY-MM" -> {year, month}
+        if (!yearMonth || yearMonth.length !== 7) return null;
+        const [yearStr, monthStr] = yearMonth.split('-');
+        return { year: parseInt(yearStr, 10), month: parseInt(monthStr, 10) };
+    }
+
+    function updateTopBar() {
+        const username = currentUser?.username || '사용자';
+        document.getElementById('top-username').textContent = username;
+        document.getElementById('sidebar-username').textContent = username;
+        document.getElementById('sidebar-username-mini').textContent = username;
+
+        document.getElementById('top-year-month').textContent = currentYearMonth || '-';
+
+        // 예산은 별도로 조회된 값을 통해 업데이트 (top-budget dataset.value)
+        const budgetText = document.getElementById('top-budget').dataset.value || '0';
+        document.getElementById('top-budget').textContent = formatCurrency(budgetText);
+
+        // 지출 합계
+        const total = currentExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+        document.getElementById('top-expense-total').textContent = formatCurrency(total);
+    }
+
+    function clearBudgetInputs() {
+        document.getElementById('budget-total').value = '';
+        document.getElementById('budget-food').value = '';
+        document.getElementById('budget-cafe').value = '';
+        document.getElementById('budget-shopping').value = '';
+        document.getElementById('budget-transport').value = '';
+        document.getElementById('budget-culture').value = '';
+        document.getElementById('budget-life').value = '';
+        document.getElementById('budget-health').value = '';
+        document.getElementById('budget-beauty').value = '';
+    }
+
+    // ====== 로그인/회원가입 탭 전환 ======
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const target = tab.dataset.tab;
+            document.querySelectorAll('.auth-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            document.getElementById(target + '-form').classList.add('active');
+        });
+    });
+
+    // ====== 로그인 ======
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+
+        if (!username || !password) {
+            showToast('아이디와 비밀번호를 입력해주세요.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/user/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (!res.ok) {
+                throw new Error('로그인 실패');
+            }
+
+            const user = await res.json();
+            if (!user || !user.id) {
+                throw new Error('로그인 정보가 올바르지 않습니다.');
+            }
+
+            currentUser = user;
+            showToast(`${user.username}님, 환영해요!`);
+
+            // 기본 기준월: 오늘 날짜 기준
+            const today = new Date();
+            const ym = today.toISOString().slice(0, 7);
+            currentYearMonth = ym;
+            document.getElementById('global-year-month').value = ym;
+            updateTopBar();
+
+            // 로그인 섹션 숨기고 메인 앱 보여주기
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('app-section').style.display = 'flex';
+
+            // 첫 로딩: 예산/지출 불러오기
+            await loadBudget();
+            await loadExpensesForCurrentMonth();
+        } catch (err) {
+            console.error(err);
+            showToast('로그인에 실패했어요. 아이디/비밀번호를 확인해주세요.');
+        }
+    });
+
+    // ====== 회원가입 ======
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('register-name').value.trim();
+        const username = document.getElementById('register-username').value.trim();
+        const password = document.getElementById('register-password').value.trim();
+        const age = document.getElementById('register-age').value;
+        const gender = document.getElementById('register-gender').value;
+
+        if (!username || !password) {
+            showToast('아이디와 비밀번호는 필수예요.');
+            return;
+        }
+
+        const payload = {
+            username,
+            password
+        };
+        if (name) payload.name = name;
+        if (age) payload.age = Number(age);
+        if (gender) payload.gender = gender;
+
+        try {
+            const res = await fetch('/api/user/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                throw new Error('회원가입 실패');
+            }
+
+            const user = await res.json();
+            showToast('회원가입이 완료되었어요! 이제 로그인해 주세요.');
+
+            // 로그인 탭으로 전환
+            document.querySelector('.auth-tab[data-tab="login"]').click();
+            document.getElementById('login-username').value = user.username || username;
+        } catch (err) {
+            console.error(err);
+            showToast('회원가입 중 오류가 발생했어요.');
+        }
+    });
+
+    // ====== 로그아웃 ======
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        currentUser = null;
+        currentYearMonth = null;
+        currentExpenses = [];
+        if (chartInstance) {
+            chartInstance.destroy();
+            chartInstance = null;
+        }
+        document.getElementById('app-section').style.display = 'none';
+        document.getElementById('auth-section').style.display = 'flex';
+
+        clearBudgetInputs();
+        document.getElementById('login-form').reset();
+        document.getElementById('top-budget').dataset.value = '0';
+        updateTopBar();
+
+        showToast('로그아웃 되었습니다.');
+    });
+
+    // ====== 사이드바 탭 전환 (예산/지출/달력/통계) ======
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const target = btn.dataset.target;
+
+            // 상단 좌측 카드 내부 섹션
+            document.querySelectorAll('.section-panel').forEach(sec => {
+                // 이 중 상단 카드용 섹션만 처리: id가 section- 으로 시작하는 것
+                if (sec.id.startsWith('section-')) {
+                    sec.classList.remove('active');
+                }
+            });
+            document.getElementById('section-' + target).classList.add('active');
+
+            // 우측 카드 섹션
+            ['panel-expense-list', 'panel-calendar-view', 'panel-stats-view'].forEach(id => {
+                document.getElementById(id).classList.remove('active');
+            });
+
+            if (target === 'budget') {
+                document.getElementById('panel-expense-list').classList.add('active');
+            } else if (target === 'expense') {
+                document.getElementById('panel-expense-list').classList.add('active');
+            } else if (target === 'calendar') {
+                document.getElementById('panel-calendar-view').classList.add('active');
+            } else if (target === 'stats') {
+                document.getElementById('panel-stats-view').classList.add('active');
+            }
+
+            // 통계/달력은 데이터 기반 렌더링
+            if (target === 'calendar') {
+                renderCalendar();
+            }
+            if (target === 'stats') {
+                renderChart();
+            }
+        });
+    });
+
+    // ====== 기준 월 설정 버튼 ======
+    document.getElementById('btn-set-month').addEventListener('click', async () => {
+        const ym = document.getElementById('global-year-month').value;
+        if (!ym) {
+            showToast('기준 월을 먼저 선택해주세요.');
+            return;
+        }
+        currentYearMonth = ym;
+        updateTopBar();
+        await loadBudget();
+        await loadExpensesForCurrentMonth();
+    });
+
+    // ====== 예산 저장/조회/삭제 ======
+	async function loadBudget() {
+	    if (!currentUser || !currentYearMonth) return;
+
+	    try {
+	        // "2025-11" → year=2025, month=11
+	        const [yearStr, monthStr] = currentYearMonth.split("-");
+	        const year = parseInt(yearStr, 10);
+	        const month = parseInt(monthStr, 10);
+
+	        const res = await fetch(`/api/budget/${currentUser.id}/${year}/${month}`);
+	        if (!res.ok) {
+	            // 해당 월 예산 없음
+	            clearBudgetInputs();
+	            document.getElementById('top-budget').dataset.value = '0';
+	            updateTopBar();
+	            return;
+	        }
+
+	        // 백엔드는 Budget 하나를 반환하니까 배열이 아니라 객체로 받기
+	        const b = await res.json();
+
+	        if (b) {
+	            document.getElementById('budget-total').value = b.totalBudget ?? 0;
+	            document.getElementById('budget-food').value = b.foodBudget ?? 0;
+	            document.getElementById('budget-cafe').value = b.cafeBudget ?? 0;
+	            document.getElementById('budget-shopping').value = b.shoppingBudget ?? 0;
+	            document.getElementById('budget-transport').value = b.transportBudget ?? 0;
+	            document.getElementById('budget-culture').value = b.cultureBudget ?? 0;
+	            document.getElementById('budget-life').value = b.lifeBudget ?? 0;
+	            document.getElementById('budget-health').value = b.healthBudget ?? 0;
+	            document.getElementById('budget-beauty').value = b.beautyBudget ?? 0;
+
+	            const total = b.totalBudget ?? 0;
+	            document.getElementById('top-budget').dataset.value = total;
+	        } else {
+	            clearBudgetInputs();
+	            document.getElementById('top-budget').dataset.value = '0';
+	        }
+
+	        updateTopBar();
+	    } catch (err) {
+	        console.error(err);
+	        showToast('예산 조회 중 오류가 발생했어요.');
+	    }
+	}
+
+
+    document.getElementById('btn-save-budget').addEventListener('click', async () => {
+        if (!currentUser) {
+            showToast('먼저 로그인 해주세요.');
+            return;
+        }
+        if (!currentYearMonth) {
+            showToast('기준 월을 먼저 선택해주세요.');
+            return;
+        }
+
+        const body = {
+            yearMonth: currentYearMonth,
+            totalBudget: Number(document.getElementById('budget-total').value || 0),
+            foodBudget: Number(document.getElementById('budget-food').value || 0),
+            cafeBudget: Number(document.getElementById('budget-cafe').value || 0),
+            shoppingBudget: Number(document.getElementById('budget-shopping').value || 0),
+            transportBudget: Number(document.getElementById('budget-transport').value || 0),
+            cultureBudget: Number(document.getElementById('budget-culture').value || 0),
+            lifeBudget: Number(document.getElementById('budget-life').value || 0),
+            healthBudget: Number(document.getElementById('budget-health').value || 0),
+            beautyBudget: Number(document.getElementById('budget-beauty').value || 0)
+        };
+
+        try {
+            const res = await fetch(`/api/budget/${currentUser.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            if (!res.ok) throw new Error('예산 저장 실패');
+
+            const saved = await res.json();
+            document.getElementById('top-budget').dataset.value = body.totalBudget;
+            updateTopBar();
+            showToast('예산이 저장되었어요.');
+        } catch (err) {
+            console.error(err);
+            showToast('예산 저장 중 오류가 발생했어요.');
+        }
+    });
+
+    document.getElementById('btn-load-budget').addEventListener('click', async () => {
+        await loadBudget();
+        showToast('예산을 불러왔어요.');
+    });
+
+    document.getElementById('btn-delete-budget').addEventListener('click', async () => {
+        if (!currentUser || !currentYearMonth) {
+            showToast('로그인과 기준 월 선택을 먼저 해주세요.');
+            return;
+        }
+        if (!confirm('해당 월의 예산을 삭제할까요?')) return;
+
+        try {
+            const res = await fetch(`/api/budget/${currentUser.id}/${currentYearMonth}`, {
+                method: 'DELETE'
+            });
+            if (!res.ok && res.status !== 204) {
+                throw new Error('삭제 실패');
+            }
+            clearBudgetInputs();
+            document.getElementById('top-budget').dataset.value = '0';
+            updateTopBar();
+            showToast('예산이 삭제되었어요.');
+        } catch (err) {
+            console.error(err);
+            showToast('예산 삭제 중 오류가 발생했어요.');
+        }
+    });
+
+    // ====== 지출 저장/조회/삭제 ======
+    async function loadExpensesForCurrentMonth() {
+        if (!currentUser || !currentYearMonth) return;
+        const parsed = parseYearMonth(currentYearMonth);
+        if (!parsed) return;
+        const { year, month } = parsed;
+
+        try {
+            const res = await fetch(`/api/expense/${currentUser.id}/${year}/${month}`);
+            if (!res.ok) {
+                currentExpenses = [];
+            } else {
+                currentExpenses = await res.json();
+            }
+            renderExpenseTable();
+            renderChart();
+            renderCalendar();
+            updateTopBar();
+        } catch (err) {
+            console.error(err);
+            showToast('지출 조회 중 오류가 발생했어요.');
+        }
+    }
+
+    function renderExpenseTable() {
+        const tbody = document.getElementById('expense-table-body');
+        tbody.innerHTML = '';
+
+        if (!currentExpenses || currentExpenses.length === 0) {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 5;
+            td.textContent = '등록된 지출이 없습니다.';
+            td.style.textAlign = 'center';
+            td.style.color = '#b2bec3';
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+            return;
+        }
+
+        currentExpenses.forEach(exp => {
+            const tr = document.createElement('tr');
+
+            const dateTd = document.createElement('td');
+            dateTd.textContent = exp.spendDate || '-';
+
+            const categoryTd = document.createElement('td');
+            categoryTd.textContent = exp.category || '-';
+
+            const memoTd = document.createElement('td');
+            memoTd.textContent = exp.memo || '';
+
+            const amountTd = document.createElement('td');
+            amountTd.style.textAlign = 'right';
+            amountTd.textContent = formatCurrency(exp.amount);
+
+            const actionTd = document.createElement('td');
+            const delBtn = document.createElement('button');
+            delBtn.textContent = '삭제';
+            delBtn.className = 'btn btn-danger';
+            delBtn.style.padding = '4px 8px';
+            delBtn.style.fontSize = '0.75rem';
+            delBtn.addEventListener('click', () => deleteExpense(exp.id));
+            actionTd.appendChild(delBtn);
+
+            tr.appendChild(dateTd);
+            tr.appendChild(categoryTd);
+            tr.appendChild(memoTd);
+            tr.appendChild(amountTd);
+            tr.appendChild(actionTd);
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function deleteExpense(expenseId) {
+        if (!expenseId) return;
+        if (!confirm('이 지출 내역을 삭제할까요?')) return;
+
+        try {
+            const res = await fetch(`/api/expense/${expenseId}`, {
+                method: 'DELETE'
+            });
+            if (!res.ok && res.status !== 204) {
+                throw new Error('지출 삭제 실패');
+            }
+            showToast('지출 내역이 삭제되었어요.');
+            await loadExpensesForCurrentMonth();
+        } catch (err) {
+            console.error(err);
+            showToast('지출 삭제 중 오류가 발생했어요.');
+        }
+    }
+
+    document.getElementById('btn-save-expense').addEventListener('click', async () => {
+        if (!currentUser) {
+            showToast('먼저 로그인 해주세요.');
+            return;
+        }
+        const date = document.getElementById('expense-date').value;
+        const category = document.getElementById('expense-category').value.trim();
+        const memo = document.getElementById('expense-memo').value.trim();
+        const amount = Number(document.getElementById('expense-amount').value || 0);
+
+        if (!date || !amount) {
+            showToast('날짜와 금액은 필수예요.');
+            return;
+        }
+
+        // 기준 월 자동 세팅 (지출 날짜 기준)
+        const ym = getYearMonthFromDateStr(date);
+        currentYearMonth = ym;
+        document.getElementById('global-year-month').value = ym;
+
+        const payload = {
+			spendDate: date,
+            category,
+            memo,
+            amount
+        };
+
+        try {
+            const res = await fetch(`/api/expense/${currentUser.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                throw new Error('지출 저장 실패');
+            }
+            await res.json();
+
+            // 폼 리셋
+            document.getElementById('expense-category').value = '';
+            document.getElementById('expense-memo').value = '';
+            document.getElementById('expense-amount').value = '';
+
+            showToast('지출이 저장되었어요.');
+            await loadExpensesForCurrentMonth();
+        } catch (err) {
+            console.error(err);
+            showToast('지출 저장 중 오류가 발생했어요.');
+        }
+    });
+
+    document.getElementById('btn-refresh-expense').addEventListener('click', async () => {
+        await loadExpensesForCurrentMonth();
+        showToast('지출을 새로고침했어요.');
+    });
+
+    // ====== 차트 렌더링 (카테고리별 합계) ======
+    function renderChart() {
+        const ctx = document.getElementById('expense-chart').getContext('2d');
+        const sumByCategory = {};
+
+        currentExpenses.forEach(e => {
+            const cat = e.category || '기타';
+            const amt = e.amount || 0;
+            if (!sumByCategory[cat]) sumByCategory[cat] = 0;
+            sumByCategory[cat] += amt;
+        });
+
+        const labels = Object.keys(sumByCategory);
+        const data = Object.values(sumByCategory);
+
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: '카테고리별 지출',
+                    data,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const v = context.parsed.y || 0;
+                                return formatCurrency(v);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('ko-KR') + '원';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // ====== 달력 렌더링 (날짜별 합계) ======
+    function renderCalendar() {
+        const grid = document.getElementById('calendar-grid');
+        const monthLabel = document.getElementById('calendar-month-label');
+        grid.innerHTML = '';
+
+        if (!currentYearMonth) {
+            monthLabel.textContent = '-';
+            return;
+        }
+
+        const { year, month } = parseYearMonth(currentYearMonth);
+        monthLabel.textContent = `${year}년 ${month}월`;
+
+        const firstDay = new Date(year, month - 1, 1);
+        const lastDay = new Date(year, month, 0);
+        const firstWeekday = firstDay.getDay(); // 0 (일) ~ 6 (토)
+        const daysInMonth = lastDay.getDate();
+
+        // 날짜별 합계
+        const sumByDay = {};
+        currentExpenses.forEach(e => {
+            if (!e.spendDate) return;
+            const d = new Date(e.spendDate);
+            if (d.getFullYear() === year && (d.getMonth() + 1) === month) {
+                const day = d.getDate();
+                if (!sumByDay[day]) sumByDay[day] = 0;
+                sumByDay[day] += e.amount || 0;
+            }
+        });
+
+        // 앞쪽 빈 셀
+        for (let i = 0; i < firstWeekday; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'calendar-cell';
+            grid.appendChild(emptyCell);
+        }
+
+        // 날짜 셀
+        for (let day = 1; day <= daysInMonth; day++) {
+            const cell = document.createElement('div');
+            cell.className = 'calendar-cell';
+
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day';
+            dayDiv.textContent = day;
+            cell.appendChild(dayDiv);
+
+            const sum = sumByDay[day] || 0;
+            if (sum > 0) {
+                const amountDiv = document.createElement('div');
+                amountDiv.className = 'amount';
+                amountDiv.textContent = formatCurrency(sum);
+                cell.appendChild(amountDiv);
+            }
+
+            grid.appendChild(cell);
+        }
+    }
+
+    // ====== 초기화 (페이지 로드 시) ======
+    window.addEventListener('load', () => {
+        // 기본 뷰: 로그인 화면
+        document.getElementById('auth-section').style.display = 'flex';
+        document.getElementById('app-section').style.display = 'none';
+
+        document.getElementById('top-budget').dataset.value = '0';
+    });
+</script>
+
+</body>
+</html>
