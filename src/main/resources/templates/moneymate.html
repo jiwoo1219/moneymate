@@ -74,7 +74,8 @@
   /* Header */
   .header{
     position:sticky;
-    top:0;z-index:10;
+    top:0;
+	z-index:20001;
     background:linear-gradient(180deg, var(--y-100), rgba(0,0,0,0));
     backdrop-filter:saturate(120%);
   }
@@ -108,18 +109,31 @@
   .dropdown.hidden{display:none}
 
   /* Sheet 메뉴 */
-  .sheet{position:fixed;inset:0;display:none}
+  .sheet{
+    position:fixed;
+    inset:0;
+    display:none;
+    z-index: 10000;   /* ⭐⭐ 추가! 메뉴의 최상위 레벨로 올림 */
+  }
   .sheet.active{display:block}
   .sheet .backdrop{
     position:absolute;inset:0;background:rgba(0,0,0,.18);
   }
   .sheet .panel{
+	padding-top: 60px !important; /* 상단 여백 추가 */
     position:absolute;left:0;top:0;bottom:0;width:300px;
     background:white;border-right:1px solid var(--line);
     padding:18px;display:flex;flex-direction:column;gap:16px;
     box-shadow:var(--shadow);
   }
-  .menu-title{font-weight:800}
+  .menu-title{
+    font-weight: 800;  /* 있어도 되고 없어도 됨 */
+
+    height: 56px;        /* 이게 핵심! 위에 공간 확보 */
+    visibility: hidden;  /* 글자는 안 보이게 */
+  }
+
+
   .menu-group{display:flex;flex-direction:column;gap:8px}
   .menu-group button{width:100%;text-align:left;justify-content:flex-start}
 
@@ -174,8 +188,18 @@
   /* 강아지 */
   .dog-card{display:grid;grid-template-columns:1.1fr 1.1fr;gap:16px}
   .dog-left{position:relative;overflow:hidden;border-radius:var(--radius);background:linear-gradient(180deg,#FFF9D1,#FFF4A4)}
-  .dog-img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #3b2f00 0 40%, #241a00 41% 100%);box-shadow:0 18px 40px rgba(0,0,0,.15)}
-  .float{animation:float 3s ease-in-out infinite}
+  .dog-img{
+    position:absolute;
+    left:50%;top:50%;
+    transform:translate(-50%,-50%);
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    box-shadow:0 18px 40px rgba(0,0,0,.15);
+  }
   @keyframes float{0%,100%{transform:translate(-50%,-50%) translateY(0)}50%{transform:translate(-50%,-50%) translateY(-10px)}}
   .bone{position:absolute;bottom:14px;left:14px;background:#fff;padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-weight:700;font-size:13px}
   .dog-right{padding:16px;display:flex;flex-direction:column;gap:10px}
@@ -226,7 +250,6 @@
 <aside class="sheet" id="menuSheet" aria-hidden="true">
   <div class="backdrop" data-close></div>
   <div class="panel">
-    <div class="menu-title">메뉴</div>
     <div class="menu-group">
       <div class="switch" title="KRW/AUD 전체 통화 전환 (프론트 표시용)">
         <label for="currencyToggle">KRW ↔︎ AUD</label>
@@ -596,6 +619,15 @@
 <div id="toast" class="toast"></div>
 
 <script>
+
+/*********************** 강아지 이미지 경로 ***********************/
+const dogImages = {
+	 1: '/img/dog_lv1.png',
+	 2: '/img/dog_lv2.png',
+	 3: '/img/dog_lv3.png',
+	 4: '/img/dog_lv4.png',
+	 5: '/img/dog_lv5.png'
+};
 /* ===== 공통 유틸 ===== */
 const $ = (sel,root=document)=>root.querySelector(sel);
 const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
@@ -658,6 +690,12 @@ $$('#menuSheet [data-nav]').forEach(btn=>{
     go(target);
     if(target==='page-calendar') renderCalendar();
     if(target==='page-stats'){ drawLine(); renderCategoryBars(); }
+	
+	// ⭐⭐⭐ 강아지 페이지 들어갈 때 강제 갱신!!
+	if(target === 'page-dog'){
+	   loadDog();
+	   updateDogUI();
+	 }
   });
 });
 
@@ -1369,6 +1407,13 @@ function updateDogUI(){
   $('#dogLevel').textContent = 'Lv.'+dogState.level;
   const pct = Math.min(100, Math.round(dogState.xp / t.need * 100));
   $('#dogProgress').style.width = pct + '%';
+  
+  // ⭐⭐ 강아지 이미지 적용 (여기 추가!)
+  const imgPath = dogImages[dogState.level] || dogImages[1];
+  const dogImgEl = document.getElementById('dogImg');
+  dogImgEl.style.backgroundImage = `url('${imgPath}')`;
+  dogImgEl.style.backgroundSize = 'cover';
+  dogImgEl.style.backgroundPosition = 'center';
 }
 function addEmojis(type){
   const box = $('#dogEmojis');
